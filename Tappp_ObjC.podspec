@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |spec|
   spec.name             = 'Tappp_ObjC'
-  spec.version          = '0.1.0'
+  spec.version          = '0.1.1'
   spec.summary          = 'A short description of Tappp_ObjC.'
   spec.description  = "This will be test description for inmplememting pod file."
 
