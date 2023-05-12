@@ -32,14 +32,14 @@
         NSBundle *pdBundle = [NSBundle bundleForClass:[TapppPanelLibrary class]];
         NSBundle *resourcesBundle = [pdBundle pathForResource:@"Resources" ofType:@"bundle"];
         NSBundle *resourcesBundle1 = [NSBundle bundleWithPath:resourcesBundle];
-        NSString *htmlFile = [resourcesBundle1 pathForResource:@"sample" ofType:@"html"];
+        NSString *htmlFile = [resourcesBundle1 pathForResource:@"index" ofType:@"html"];
         
         NSString* htmlString = [NSString stringWithContentsOfFile:htmlFile encoding:NSUTF8StringEncoding error:nil];
 
         NSLog(@"dispatch_get_main_queue called");
     webView = [[WKWebView alloc] initWithFrame:view.frame];
     webView.frame = CGRectMake(0, 0, view.frame.size.width, view.frame.size.height);
-    [webView loadHTMLString:htmlString baseURL: [[NSBundle mainBundle] bundleURL]];
+    [webView loadHTMLString:htmlString baseURL: resourcesBundle1.bundleURL];
     webView.backgroundColor = UIColor.yellowColor;
     webView.navigationDelegate = self;
     [view addSubview:webView];
@@ -47,6 +47,7 @@
         [self loadJs];
     });
 }
+
 - (void)loadJs {
     NSLog(@"Finished navigating to url \(webView.url)");
     
@@ -138,7 +139,7 @@
 -(void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation{
     NSLog(@"Finished navigating to url \(webView.url)");
 
-    [self.webView evaluateJavaScript:@"myFunction('cb0403c8-0f3c-4778-8d26-c4a63329678b','1000009', '300', 'TRN', 'cf9bb061-a040-4f43-56546-525252678b', 'px', 'https://apps.tappp.com/mlr/mobile/bundle.js', 'iPhone')" completionHandler:^(id result, NSError * _Nullable error) {
+    [self.webView evaluateJavaScript:@"myFunction('cb0403c8-0f3c-4778-8d26-c4a63329678b','1000009', '100', 'TRN', 'cf9bb061-a040-4f43-56546-525252678b', '%', 'https://apps.tappp.com/mlr/mobile/bundle.js', 'iPhone')" completionHandler:^(id result, NSError * _Nullable error) {
         __block NSString *resultString = nil;
         if (error == nil) {
             if (result != nil) {
