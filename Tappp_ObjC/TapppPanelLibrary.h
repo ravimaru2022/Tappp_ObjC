@@ -14,6 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(strong,nonatomic) WKWebView *webView;
 @property(strong, nonatomic) UIView *view;
 @property (strong, nonatomic) NSString *appURL;
+@property (strong, nonatomic) NSTimer *timer;
 
 - (void)initPanel:(NSDictionary *)tapppContext currView:(UIView *)currView;
 - (void)startPanel;

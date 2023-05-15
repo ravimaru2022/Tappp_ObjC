@@ -13,66 +13,51 @@
 @implementation TapppPanelLibrary
 @synthesize webView;
 @synthesize view;
+@synthesize timer;
 
 - (void)initPanel:(NSDictionary *)tapppContext currView:(UIView *)currView {
     self.webView.translatesAutoresizingMaskIntoConstraints = false;
     self.view = currView;
-    [self startPanel];
+    
+    dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void){
+        //Background Thread
+        NSString *strURL = @"https://registry.tappp.com/appInfo?broadcasterName=TRN&device=web&environment=dev&appVersion=1.1";
+        [self geRegistryServiceDetail:strURL andCompletionHandler:^(NSString *result) {
+            self.appURL = result;
+            NSLog(@"self.appURL : %@", self.appURL);
+        }];
+        
+    });
 
-    /*NSString *strURL = @"https://registry.tappp.com/appInfo?broadcasterName=TRN&device=web&environment=dev&appVersion=1.1";
-    [self geRegistryServiceDetail:strURL andCompletionHandler:^(NSString *result) {
-        self.appURL = result;
-        NSLog(@"self.appURL : %@", self.appURL);
-        [self startPanel];
-    }];*/
+    dispatch_async(dispatch_get_main_queue(), ^(void){
+        self.timer = [NSTimer scheduledTimerWithTimeInterval: 1.0
+                              target: self
+                              selector:@selector(startPanel)
+                              userInfo: nil repeats:YES];
+    });
 }
 
+
 - (void)startPanel{
-    //dispatch_async(dispatch_get_main_queue(), ^{
+    if (_appURL.length > 0){
+        [self.timer invalidate];
+        NSLog(@" Timer Performed ");
         NSBundle *pdBundle = [NSBundle bundleForClass:[TapppPanelLibrary class]];
         NSBundle *resourcesBundle = [pdBundle pathForResource:@"Resources" ofType:@"bundle"];
         NSBundle *resourcesBundle1 = [NSBundle bundleWithPath:resourcesBundle];
         NSString *htmlFile = [resourcesBundle1 pathForResource:@"index" ofType:@"html"];
         
         NSString* htmlString = [NSString stringWithContentsOfFile:htmlFile encoding:NSUTF8StringEncoding error:nil];
-
-        NSLog(@"dispatch_get_main_queue called");
-    webView = [[WKWebView alloc] initWithFrame:view.frame];
-    webView.frame = CGRectMake(0, 0, view.frame.size.width, view.frame.size.height);
-    [webView loadHTMLString:htmlString baseURL: resourcesBundle1.bundleURL];
-    webView.backgroundColor = UIColor.yellowColor;
-    webView.navigationDelegate = self;
-    [view addSubview:webView];
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 2 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-        [self loadJs];
-    });
-}
-
-- (void)loadJs {
-    NSLog(@"Finished navigating to url \(webView.url)");
-    
-    NSString * scriptSource = [NSString stringWithFormat:@"myFunction()"];
-    [webView evaluateJavaScript:scriptSource completionHandler:^(NSString *result, NSError *error)
-     {
-        if(result != nil){
-            NSLog(@"Result: %@",result);
-        }
         
-    }];
-}
-- (void)configureWebview:(UIView*)view{
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        dispatch_async(dispatch_get_main_queue(), ^{
-            NSString *htmlFile = [[NSBundle mainBundle] pathForResource:@"index" ofType:@"html"];
-            NSString* htmlString = [NSString stringWithContentsOfFile:htmlFile encoding:NSUTF8StringEncoding error:nil];
-            self.webView = [[WKWebView alloc] initWithFrame:self.view.frame];
-            self.webView.frame = CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height);
-            [self.webView loadHTMLString:htmlString baseURL: [[NSBundle mainBundle] bundleURL]];
-            self.webView.backgroundColor = UIColor.yellowColor;
-            self.webView.navigationDelegate = self;
-            [self.view addSubview:self.webView];
-        });
-    });
+        webView = [[WKWebView alloc] initWithFrame:view.frame];
+        webView.frame = CGRectMake(0, 0, view.frame.size.width, view.frame.size.height);
+        //[webView loadHTMLString:htmlString baseURL: [[NSBundle mainBundle] bundleURL]];
+        [webView loadHTMLString:htmlString baseURL: resourcesBundle1.bundleURL];
+        webView.backgroundColor = UIColor.yellowColor;
+        webView.configuration.preferences.javaScriptEnabled = true;
+        webView.navigationDelegate = self;
+        [view addSubview:webView];
+    }
 }
 
 -(void)geRegistryServiceDetail:(NSString*)inputURL andCompletionHandler:(void (^)(NSString* result))completionHandler{
@@ -138,8 +123,10 @@
 
 -(void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation{
     NSLog(@"Finished navigating to url \(webView.url)");
+    //(gameId, bookId, width, broadcasterName, userId, widthUnit, appURL, deviceType)//self.appURL
+    NSString* script = [NSString stringWithFormat:@"handleMessage(\'cb0403c8-0f3c-4778-8d26-c4a63329678b\',\'1000009\', \'100\', \'TRN\', \'cf9bb061-a040-4f43-56546-525252678b\', \'%\', '%@', \'iPhone\')", self.appURL];
 
-    [self.webView evaluateJavaScript:@"myFunction('cb0403c8-0f3c-4778-8d26-c4a63329678b','1000009', '100', 'TRN', 'cf9bb061-a040-4f43-56546-525252678b', '%', 'https://apps.tappp.com/mlr/mobile/bundle.js', 'iPhone')" completionHandler:^(id result, NSError * _Nullable error) {
+    [self.webView evaluateJavaScript:script completionHandler:^(id result, NSError * _Nullable error) {
         __block NSString *resultString = nil;
         if (error == nil) {
             if (result != nil) {

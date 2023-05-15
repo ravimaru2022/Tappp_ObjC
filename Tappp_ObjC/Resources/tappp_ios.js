@@ -18,27 +18,6 @@ function handleMessage(gameId, bookId, width, broadcasterName, userId, widthUnit
     }
 }
 
-function myFunction1(gameId, bookId, width, broadcasterName, userId, widthUnit, appURL, deviceType) {
-    createDivForReactNative(gameId, bookId, width, broadcasterName, userId, widthUnit);
-    loadReactLiveScriptAPI(appURL);
-    return userId;
-}
-
-function myFunction(gameId, bookId, width, broadcasterName, userId, widthUnit, appURL, deviceType) {
-    gameId = 'cb0403c8-0f3c-4778-8d26-c4a63329678b';
-    bookId = '1000009';
-    width = '300';
-    broadcasterName = 'TRN';
-    userId = 'cf9bb061-a040-4f43-56546-525252678b';
-    widthUnit = 'px';
-    deviceType = 'iPhone';
-    appURL = 'https://apps.tappp.com/mlr/mobile/bundle.js';
-
-    createDivForReactNative(gameId, bookId, width, broadcasterName, userId, widthUnit);
-    loadReactLiveScriptAPI(appURL);
-    return gameId;
-}
-
 function createDivForReactNative(gameId, bookId, width, broadcasterName, userId, widthUnit) {
     const rootDiv = document.createElement('div');
     const rootTag = "<div id='tappp-panel' userid='"+ userId +"' bookid='"+ bookId +"' gameid='"+ gameId +"' width='"+ width +"' widthunit='" + widthUnit +"' broadcastername='" + broadcasterName + "' ></div>";
