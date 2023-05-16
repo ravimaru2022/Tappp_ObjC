@@ -15,6 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(strong, nonatomic) UIView *view;
 @property (strong, nonatomic) NSString *appURL;
 @property (strong, nonatomic) NSTimer *timer;
+@property NSDictionary<NSString *, id> *objectPanelData;
 
 - (void)initPanel:(NSDictionary *)tapppContext currView:(UIView *)currView;
 - (void)startPanel;

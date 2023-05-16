@@ -1,4 +1,4 @@
-function handleMessage(gameId, bookId, width, broadcasterName, userId, widthUnit, appURL, deviceType) {
+function handleMessage(gameId, bookId, width, broadcasterName, userId, widthUnit, appURL, deviceType, env) {
     try {
         if(!widthUnit) {
             widthUnit = 'px';
@@ -7,7 +7,7 @@ function handleMessage(gameId, bookId, width, broadcasterName, userId, widthUnit
         width = '100';
         if(gameId && bookId){
             //            Dynamically create a placeholder div for panel
-            createDivForReactNative(gameId, bookId, width, broadcasterName, userId, widthUnit);
+            createDivForReactNative(gameId, bookId, width, broadcasterName, userId, widthUnit, env);
             //            Load all the react native scripts
             loadReactLiveScriptAPI(appURL);
             //            Helper functions
@@ -18,9 +18,19 @@ function handleMessage(gameId, bookId, width, broadcasterName, userId, widthUnit
     }
 }
 
-function createDivForReactNative(gameId, bookId, width, broadcasterName, userId, widthUnit) {
+function myFunction(gameId, bookId, width, broadcasterName, userId, widthUnit, appURL, deviceType) {
+    try {
+        createDivForReactNative(gameId, bookId, width, broadcasterName, userId, widthUnit);
+        loadReactLiveScriptAPI(appURL);
+    } catch(e) {
+        console.log('...Error on handle message', e);
+    }
+    return gameId;
+}
+
+function createDivForReactNative(gameId, bookId, width, broadcasterName, userId, widthUnit, env) {
     const rootDiv = document.createElement('div');
-    const rootTag = "<div id='tappp-panel' userid='"+ userId +"' bookid='"+ bookId +"' gameid='"+ gameId +"' width='"+ width +"' widthunit='" + widthUnit +"' broadcastername='" + broadcasterName + "' ></div>";
+    const rootTag = "<div id='tappp-panel' userid='"+ userId +"' bookid='"+ bookId +"' gameid='"+ gameId +"' width='"+ width +"' widthunit='" + widthUnit +"' broadcastername='" + broadcasterName + "'env='"+ env +"' ></div>";
     rootDiv.innerHTML = rootTag;
     
     document.body.appendChild(rootDiv);

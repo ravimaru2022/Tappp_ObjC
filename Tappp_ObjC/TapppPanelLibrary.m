@@ -14,19 +14,31 @@
 @synthesize webView;
 @synthesize view;
 @synthesize timer;
+@synthesize objectPanelData;
 
 - (void)initPanel:(NSDictionary *)tapppContext currView:(UIView *)currView {
+    objectPanelData = tapppContext;
+    
+    NSDictionary *dict = tapppContext[@"gameInfo"];
+    NSString *broadcasterName = dict[@"broadcasterName"];
+    if (broadcasterName == nil) {
+        return;
+    }
+
+    NSString *environment = dict[@"evr"];
+    if (environment == nil) {
+        return;
+    }
+    
     self.webView.translatesAutoresizingMaskIntoConstraints = false;
     self.view = currView;
     
     dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void){
-        //Background Thread
-        NSString *strURL = @"https://registry.tappp.com/appInfo?broadcasterName=TRN&device=web&environment=dev&appVersion=1.1";
+        NSString *strURL = [NSString stringWithFormat:@"https://registry.tappp.com/appInfo?broadcasterName=%@&device=web&environment=%@&appVersion=1.1", broadcasterName, environment];
         [self geRegistryServiceDetail:strURL andCompletionHandler:^(NSString *result) {
             self.appURL = result;
             NSLog(@"self.appURL : %@", self.appURL);
         }];
-        
     });
 
     dispatch_async(dispatch_get_main_queue(), ^(void){
@@ -53,7 +65,7 @@
         webView.frame = CGRectMake(0, 0, view.frame.size.width, view.frame.size.height);
         //[webView loadHTMLString:htmlString baseURL: [[NSBundle mainBundle] bundleURL]];
         [webView loadHTMLString:htmlString baseURL: resourcesBundle1.bundleURL];
-        webView.backgroundColor = UIColor.yellowColor;
+        //webView.backgroundColor = UIColor.whiteColor;
         webView.configuration.preferences.javaScriptEnabled = true;
         webView.navigationDelegate = self;
         [view addSubview:webView];
@@ -117,14 +129,13 @@
     dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
 }
 
--(void)webView:(WKWebView *)webView didStartProvisionalNavigation:(WKNavigation *)navigation{
-    
-}
+-(void)loadDataJS:(NSDictionary*)objectPanelData{
+    NSDictionary *dict = objectPanelData[@"gameInfo"];
+    NSString *gameId = dict[@"gameId"];
+    NSString *broadcasterName = dict[@"broadcasterName"];
+    NSString *user_id = dict[@"user_id"];
 
--(void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation{
-    NSLog(@"Finished navigating to url \(webView.url)");
-    //(gameId, bookId, width, broadcasterName, userId, widthUnit, appURL, deviceType)//self.appURL
-    NSString* script = [NSString stringWithFormat:@"handleMessage(\'cb0403c8-0f3c-4778-8d26-c4a63329678b\',\'1000009\', \'100\', \'TRN\', \'cf9bb061-a040-4f43-56546-525252678b\', \'%\', '%@', \'iPhone\')", self.appURL];
+    NSString* script = [NSString stringWithFormat:@"handleMessage(\'%@\',\'1000009\', \'100\', \'%@\', \'%@\', \'%\', \'%@\', \'iPhone\', \'prod\')", gameId, broadcasterName, user_id,self.appURL];
 
     [self.webView evaluateJavaScript:script completionHandler:^(id result, NSError * _Nullable error) {
         __block NSString *resultString = nil;
@@ -136,6 +147,16 @@
             NSLog(@"evaluateJavaScript error : %@", error.localizedDescription);
         }
     }];
+
+}
+
+
+-(void)webView:(WKWebView *)webView didStartProvisionalNavigation:(WKNavigation *)navigation{
+    
+}
+
+-(void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation{
+    [self loadDataJS: objectPanelData];
 }
 
 -(void)webView:(WKWebView *)webView didFailNavigation:(WKNavigation *)navigation withError:(NSError *)error{
